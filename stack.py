@@ -30,3 +30,25 @@ class Stack:
     def size(self):
         """Return the number of items in the stack."""
         return len(self._items)
+
+
+if __name__ == "__main__":
+    s = Stack()
+    assert s.is_empty() and s.size() == 0
+    s.push(1)
+    assert not s.is_empty() and s.size() == 1
+    s.push(2)
+    s.push(3)
+    assert s.size() == 3
+    assert s.peek() == 3 and s.size() == 3
+    assert s.pop() == 3
+    assert s.pop() == 2
+    assert s.pop() == 1
+    assert s.is_empty() and s.size() == 0
+    for operation in (s.pop, s.peek):
+        try:
+            operation()
+            raise AssertionError("expected IndexError")
+        except IndexError as error:
+            print(f"{operation.__name__}() on empty stack -> IndexError: {error}")
+    print("All Stack tests passed.")
