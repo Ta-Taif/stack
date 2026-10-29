@@ -86,3 +86,50 @@ class InfixToPostfixConverter:
             tokens.append(match.group(1) or match.group(2))
             position = match.end()
         return tokens
+
+
+if __name__ == "__main__":
+    converter = InfixToPostfixConverter()
+
+    valid = [
+        ("A + B", "A B +"), ("A + B * C", "A B C * +"),
+        ("( A + B ) * C", "A B + C *"), ("A * B + C / D", "A B * C D / +"),
+        ("( A + B ) * ( C - D )", "A B + C D - *"),
+        ("A + B * C - D / E", "A B C * + D E / -"),
+        ("A * ( B + C ) / D", "A B C + * D /"),
+        ("( A + B * C ) / ( D - E )", "A B C * + D E - /"),
+        ("A + ( B - C ) * D", "A B C - D * +"),
+        ("( A + B * ( C - D ) ) / E", "A B C D - * + E /"),
+        ("A - B + C", "A B - C +"), ("A / B * C", "A B / C *"),
+        ("A - ( B - C )", "A B C - -"),
+        ("(A+B)*C", "A B + C *"), ("12 + 34 * 5", "12 34 5 * +"),
+        ("(((((((( A + B ))))))))", "A B +"), ("A", "A"),
+    ]
+    for expression, expected in valid:
+        actual = converter.convert(expression)
+        assert actual == expected, (expression, actual, expected)
+        print(f"[{expression}] -> [{actual}]")
+
+    invalid = [
+        ("A + B ) C", "mismatched parentheses"),
+        ("A + B ; C", "invalid token"),
+        ("A + B @ C", "invalid token"),
+        ("+ A B", "misplaced operator"),
+        ("A + * B", "misplaced operator"),
+        ("A + B /", "incomplete expression"),
+        ("A B + C", "misplaced operand"),
+        ("A + ) B * C (", "misplaced operator"),
+        ("( A + B", "mismatched parentheses"),
+        ("A + B )", "mismatched parentheses"),
+        ("", "empty expression"),
+        ("A +", "incomplete expression"),
+        ("( )", "empty parentheses"),
+    ]
+    for expression, text in invalid:
+        try:
+            converter.convert(expression)
+            raise AssertionError(f"[{expression}] should have failed")
+        except ValueError as error:
+            assert text in str(error), (expression, str(error))
+            print(f"[{expression}] -> ValueError: {error}")
+    print("All InfixToPostfixConverter tests passed.")
