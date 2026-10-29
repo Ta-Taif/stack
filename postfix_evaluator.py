@@ -56,3 +56,38 @@ class PostfixEvaluator:
         if right == 0:
             raise ZeroDivisionError("division by zero")
         return left / right
+
+
+if __name__ == "__main__":
+    evaluator = PostfixEvaluator()
+
+    valid = [
+        ("5 3 +", 8), ("8 2 - 3 +", 9), ("5 3 8 * +", 29), ("6 2 / 3 +", 6.0),
+        ("5 8 + 3 -", 10), ("5 3 + 8 *", 64), ("8 2 3 * + 6 -", 8),
+        ("5 3 8 * + 2 /", 14.5), ("8 2 + 3 6 * -", -8), ("5 3 + 8 2 / -", 4.0),
+        ("35 27 + 3 * ", 186), ("23 30 15 * /", 23 / (30 * 15)),
+        ("8 2 -", 6), ("8 2 /", 4.0), ("12", 12),
+    ]
+    for expression, expected in valid:
+        actual = evaluator.evaluate(expression)
+        assert actual == expected, (expression, actual, expected)
+        print(f"[{expression}] = {actual}")
+
+    invalid = [
+        ("26 28 + 32 2 ; - 5 /", ValueError, "invalid token"),
+        ("2 3 4 +", ValueError, "too many operands"),
+        ("20 29 9 * ;", ValueError, "invalid token"),
+        ("25 23 - +", ValueError, "insufficient operands"),
+        ("8 0 /", ZeroDivisionError, "division by zero"),
+        ("5 +", ValueError, "insufficient operands"),
+        ("3 + 4", ValueError, "insufficient operands"),
+        ("", ValueError, "empty expression"),
+    ]
+    for expression, error_type, text in invalid:
+        try:
+            evaluator.evaluate(expression)
+            raise AssertionError(f"[{expression}] should have failed")
+        except error_type as error:
+            assert text in str(error), (expression, str(error))
+            print(f"[{expression}] -> {error_type.__name__}: {error}")
+    print("All PostfixEvaluator tests passed.")
